@@ -1,0 +1,10 @@
+"Gamemode"
+{
+	"name"				"LookUp!"
+	"version"			"1.1"
+	"up_date"			"17.08.2017"
+	"author_name"			"Komarovec"
+	"author_email"			"Komarovec1@gmail.com"
+	"info"				"Gamemode for garrys mod"
+	"override"				"0"
+}

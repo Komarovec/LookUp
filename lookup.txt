@@ -1,0 +1,10 @@
+"LookUp!"
+{
+	"base"  "base"
+	"title" "LookUp!!!"
+	"maps" "^gm_"
+	"menusystem" "1"
+
+	"Settings"
+
+}
