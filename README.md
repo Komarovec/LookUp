@@ -2,7 +2,7 @@
 Fun gamemode for Gmod, where props are falling from the sky!
 
 # Installation
-To install, copy whole folder to: C:\Program Files (x86)\Steam\steamapps\common\GarrysMod\garrysmod\gamemodes
+To install, copy whole folder to: "C:\Program Files (x86)\Steam\steamapps\common\GarrysMod\garrysmod\gamemodes".
 Then start Garry's mod and select gamemode in right bottom corner, create a game and enjoy!
 
 # Server
