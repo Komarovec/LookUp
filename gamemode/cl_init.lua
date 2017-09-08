@@ -8,15 +8,15 @@ include("round_controller/cl_round_controller.lua")
 local count = 1
 local points = 0
 
---local Shape = vgui.Create("DShape")
---Shape:SetType("Rect")
---Shape:SetPos(ScrW()/2 - 50,0)
---Shape:SetColor(Color(255,255,255,255))
---Shape:SetSize(50,20)
+local Shape = vgui.Create("DShape")
+Shape:SetType("Rect")
+Shape:SetPos(ScrW()/2 - 50,0)
+Shape:SetColor(Color(255,255,255,255))
+Shape:SetSize(50,20)
 
---local PCounter = vgui.Create("DLabel", Shape)
---PCounter:SetDark(true)
---PCounter:SetFont("Trebuchet18")
+local PCounter = vgui.Create("DLabel", Shape)
+PCounter:SetDark(true)
+PCounter:SetFont("Trebuchet18")
 
 -- Hooks
 hook.Add("Think", "PointCounter", function()
@@ -82,12 +82,16 @@ net.Receive("OpenWeaponry", function()
 	end
 end)
 
---net.Receive("ChatText", function()
---	mess = net.ReadString()
---	chat.AddText(mess)
---end)
+net.Receive("Points", function()
+	points = net.ReadInt(16)
+end)
 
 net.Receive("ChatText", function()
+	mess = net.ReadString()
+	chat.AddText(mess)
+end)
+
+net.Receive("ScreenText", function()
 	local text = net.ReadString()
 	local txt = Label(text)
 	mesH = 52

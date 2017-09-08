@@ -3,7 +3,7 @@ roundTime = 60
 roundCooldown = 15
 
 -- Vars
-local round_status = -1 -- 0 = pozastaveno , 1 = aktivni, -1 = neb�i
+local round_status = -1 -- 0 = pozastaveno , 1 = aktivní, -1 = neběži
 local roundTimer = 0
 local timer = false
 local Rand = 0
@@ -21,7 +21,7 @@ points = {}
 
 -- Network Att
 util.AddNetworkString("UpdateRoundStatus")
-
+util.AddNetworkString("Points")
 -- Hooks
 hook.Add("Think", "TimeDelay", function()
 	if(RealTime() < roundTimer || timer == false) then return end
@@ -60,7 +60,7 @@ function Round()
 	timer = true
 	difficulty = difficulty + 1
 	initializeProps(difficulty)
-	broadcastMess("Props are falling from the sky! Round: "..difficulty..", Spawning "..getMaxProps().." props each wave!")
+	broadcastScrMess("Props are falling from the sky! Round: "..difficulty..", Spawning "..getMaxProps().." props each wave!")
 end
 
 function endRound()
@@ -76,7 +76,7 @@ function endRound()
 	respawnSpectators()
 	updateClientRoundStatus()
 	if(difficulty >= 10) then
-		broadcastMess("The game has ended!")
+		broadcastScrMess("The game has ended!")
 		maxPoints = -10000
 		insertWinner = true
 		sameScores = {}
@@ -105,16 +105,16 @@ function endRound()
 		end
 		if(table.Count(sameScores) > 0) then
 			overTime = true
-			broadcastMess("Overtime round! Players:")
+			broadcastScrMess("Overtime round! Players:")
 			for k, v in pairs(sameScores) do
 				broadcastMess(v:Nick())
 				table.insert(overTimePlayers, v)
 			end
-			broadcastMess("Starting in "..roundCooldown.." seconds!")
+			broadcastScrMess("Starting in "..roundCooldown.." seconds!")
 			roundTimer = RealTime() + roundCooldown
 			timer = true
 		else 
-			broadcastMess(winner:Nick().." has won the game with "..getPoints(winner).." points!") 
+			broadcastScrMess(winner:Nick().." has won the game with "..getPoints(winner).." points!") 
 			round_status = -1
 			updateClientRoundStatus()
 			timer = false
@@ -124,7 +124,7 @@ function endRound()
 		end
 		return
 	else
-		broadcastMess("Round has ended! New round in "..roundCooldown.." seconds.")
+		broadcastScrMess("Round has ended! New round in "..roundCooldown.." seconds.")
 		roundTimer = RealTime() + roundCooldown
 		timer = true
 	end
@@ -160,6 +160,9 @@ function addPoints(ply, ps)
 		if(ply == v) then
 			points[k]=psPlus 
 			sendMess("You have earned "..ps.." points! Now you have "..getPoints(ply).." points!", ply)
+			net.Start("Points")
+				net.WriteInt(getPoints(ply), 16)
+			net.Send(ply)
 		end
 	end
 end
@@ -178,10 +181,13 @@ end
 	
 function resetPoints()
 	points = {}
+	net.Start("Points")
+			net.WriteInt(0, 16)
+	net.Broadcast()
 end
 
 function forceEnd()
-	broadcastMess("--- FORCING END OF THE GAME ---")
+	broadcastScrMess("--- FORCING END OF THE GAME ---")
 	round_status = -1
 	deleteProps()
 	respawnSpectators()

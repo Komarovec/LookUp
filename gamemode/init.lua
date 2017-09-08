@@ -17,6 +17,7 @@ DeriveGamemode("base")
 util.AddNetworkString("OpenWeaponry")
 util.AddNetworkString("GiveWeapon")
 util.AddNetworkString("ChatText")
+util.AddNetworkString("ScreenText")
 
 net.Receive("ReloadAll", function()
 	local weapon = net.ReadString()
@@ -119,7 +120,7 @@ end)
 
 hook.Add("Think", "Reminder", function()
 	if(getRoundStatus() == -1 && reminder < RealTime()) then
-		broadcastMess("To start a round type !beginRound")
+		broadcastScrMess("To start a round type !beginRound")
 		reminder = RealTime() + 60
 	end
 end)
@@ -166,7 +167,7 @@ function GM:PlayerSpawn(ply)
 	end
 
 	self.BaseClass:PlayerSpawn(ply)
-	ply:SetModel("models/player/Police.mdl") -- Zm�nit !!! player model
+	ply:SetModel("models/player/Police.mdl") -- Změnit !!! player model
 
 	if(getRoundStatus() >= 0 && spawnNormal == false) then
 		ply:Spectate(6)
@@ -223,6 +224,18 @@ function initializeRound()
 	initializePoints()
 	setDifficulty(0)
 	beginRound()
+end
+
+function broadcastScrMess(mess)
+	net.Start("ScreenText")
+		net.WriteString(mess)
+	net.Broadcast()
+end
+
+function sendScrMess(mess, ply)
+	net.Start("ScreenText")
+		net.WriteString(mess)
+	net.Send(ply)
 end
 
 function broadcastMess(mess)
