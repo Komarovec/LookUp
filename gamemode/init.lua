@@ -167,7 +167,7 @@ function GM:PlayerSpawn(ply)
 	end
 
 	self.BaseClass:PlayerSpawn(ply)
-	ply:SetModel("models/player/Police.mdl") -- Změnit !!! player model
+	ply:SetModel("models/player/Police.mdl") -- player model
 
 	if(getRoundStatus() >= 0 && spawnNormal == false) then
 		ply:Spectate(6)

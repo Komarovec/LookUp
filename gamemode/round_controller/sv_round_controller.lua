@@ -1,5 +1,5 @@
 -- Settings
-roundTime = 60
+roundTime = 5
 roundCooldown = 15
 
 -- Vars
@@ -105,16 +105,16 @@ function endRound()
 		end
 		if(table.Count(sameScores) > 0) then
 			overTime = true
-			broadcastScrMess("Overtime round! Players:")
+			broadcastMess("Overtime round! Players:")
 			for k, v in pairs(sameScores) do
 				broadcastMess(v:Nick())
 				table.insert(overTimePlayers, v)
 			end
-			broadcastScrMess("Starting in "..roundCooldown.." seconds!")
+			broadcastScrMess("Starting in "..roundCooldown.." seconds!") 
 			roundTimer = RealTime() + roundCooldown
 			timer = true
 		else 
-			broadcastScrMess(winner:Nick().." has won the game with "..getPoints(winner).." points!") 
+			broadcastMess(winner:Nick().." has won the game with "..getPoints(winner).." points!") 
 			round_status = -1
 			updateClientRoundStatus()
 			timer = false
