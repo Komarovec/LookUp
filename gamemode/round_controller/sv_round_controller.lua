@@ -1,11 +1,11 @@
 -- Settings
-roundTime = 5
+roundTime = 60
 roundCooldown = 15
 
 -- Vars
 local round_status = -1 -- 0 = pozastaveno , 1 = aktivní, -1 = neběži
 local roundTimer = 0
-local timer = false
+local timerA = false
 local Rand = 0
 local difficulty = 0
 local maxPoints = -10000
@@ -22,16 +22,26 @@ points = {}
 -- Network Att
 util.AddNetworkString("UpdateRoundStatus")
 util.AddNetworkString("Points")
+util.AddNetworkString("Timer")
+
 -- Hooks
 hook.Add("Think", "TimeDelay", function()
-	if(RealTime() < roundTimer || timer == false) then return end
-		timer = false
+	if(RealTime() < roundTimer || timerA == false) then return end
+		timerA = false
 		if(round_status == 1) then
 			endRound()
 		else
 			beginRound()
 		end
  end)
+
+hook.Add("Think", "updateTimer", function()
+	if(getRoundStatus() == -1) then 
+		updateTimer(0)
+		return
+	end
+	updateTimer(math.Round(-(RealTime() - roundTimer)))
+end)
 
 -- Functions
 function beginRound()
@@ -51,15 +61,15 @@ function beginRound()
 			if(willDie == true) then v:Kill() end
 		end
 	end
-	updateClientRoundStatus()
 	Round()
 end
 
 function Round()
 	roundTimer = RealTime() + roundTime
-	timer = true
+	timerA = true
 	difficulty = difficulty + 1
 	initializeProps(difficulty)
+	playSound("ding.mp3")
 	broadcastScrMess("Props are falling from the sky! Round: "..difficulty..", Spawning "..getMaxProps().." props each wave!")
 end
 
@@ -74,9 +84,7 @@ function endRound()
 	end
 	deleteProps()
 	respawnSpectators()
-	updateClientRoundStatus()
 	if(difficulty >= 10) then
-		broadcastScrMess("The game has ended!")
 		maxPoints = -10000
 		insertWinner = true
 		sameScores = {}
@@ -112,12 +120,13 @@ function endRound()
 			end
 			broadcastScrMess("Starting in "..roundCooldown.." seconds!") 
 			roundTimer = RealTime() + roundCooldown
-			timer = true
-		else 
-			broadcastMess(winner:Nick().." has won the game with "..getPoints(winner).." points!") 
+			timerA = true
+		else
+			broadcastScrWinner(winner:Nick().." has won the game with "..getPoints(winner).." points!")
+			playSoundPly("winner.mp3", winner)
 			round_status = -1
-			updateClientRoundStatus()
-			timer = false
+			setRoundReminder(10)
+			timerA = false
 			roundTimer = 0
 			resetPoints()
 			spawnQueue()
@@ -126,18 +135,12 @@ function endRound()
 	else
 		broadcastScrMess("Round has ended! New round in "..roundCooldown.." seconds.")
 		roundTimer = RealTime() + roundCooldown
-		timer = true
+		timerA = true
 	end
 end
 
 function getRoundStatus()
 	return round_status
-end
-
-function updateClientRoundStatus()
-	net.Start("UpdateRoundStatus")
-		net.WriteInt(round_status, 4)
-	net.Broadcast()
 end
 
 function setDifficulty(diff)
@@ -191,8 +194,7 @@ function forceEnd()
 	round_status = -1
 	deleteProps()
 	respawnSpectators()
-	updateClientRoundStatus()
-	timer = false
+	timerA = false
 	roundTimer = 0
 	resetPoints()
 	spawnQueue()
@@ -203,4 +205,10 @@ function printPoints(ply)
 	for k, v in pairs(points) do
 		sendMess(k.." "..v, ply)
 	end
+end
+
+function updateTimer(time)
+	net.Start("Timer")
+		net.WriteInt(time, 16)
+	net.Broadcast()
 end

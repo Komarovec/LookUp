@@ -27,9 +27,9 @@ hook.Add("Think", "NextWaveTimer", function()
 	funWave = 0
 	if(math.random(1,5) == 5) then
 		funWave = math.random(1,3)
-		if(funWave == 1) then broadcastMess("Vending wave!")
-		elseif(funWave == 2) then broadcastMess("Explosive wave!")
-		elseif(funWave == 3) then broadcastMess("Cargo wave!") end
+		if(funWave == 1) then broadcastScrMess("Vending wave!")
+		elseif(funWave == 2) then broadcastScrMess("Explosive wave!")
+		elseif(funWave == 3) then broadcastScrMess("Cargo wave!") end
 	end
 	WaveTimeFinal = RealTime() + WaveTime
 	spawnedProps = 0
@@ -39,7 +39,7 @@ end)
 function initializeProps(diff)
 	spawnedProps = 0
 	Props = {}
-	if(hardnessMultiplier > 2 || hardnessMultiplier < 0.1) then
+	if(hardnessMultiplier > 2 || hardnessMultiplier < 1) then
 		print("Incorrect hardness settings! 1 or 2 !! Using default..")
 		hardnessMultiplier = 1
 	end

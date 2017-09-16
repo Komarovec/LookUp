@@ -18,6 +18,8 @@ util.AddNetworkString("OpenWeaponry")
 util.AddNetworkString("GiveWeapon")
 util.AddNetworkString("ChatText")
 util.AddNetworkString("ScreenText")
+util.AddNetworkString("ScreenTextWinner")
+util.AddNetworkString("Sound")
 
 net.Receive("ReloadAll", function()
 	local weapon = net.ReadString()
@@ -28,7 +30,7 @@ end)
 pushMultiplier = 2000
 
 -- Vars
-local deathLine = -12400
+local deathLine = -12400 -- Depens on map, working only on flatgrass!
 local spectators = {}
 local queue = {}
 local dead = {}
@@ -232,6 +234,12 @@ function broadcastScrMess(mess)
 	net.Broadcast()
 end
 
+function broadcastScrWinner(mess)
+	net.Start("ScreenTextWinner")
+		net.WriteString(mess)
+	net.Broadcast()
+end
+
 function sendScrMess(mess, ply)
 	net.Start("ScreenText")
 		net.WriteString(mess)
@@ -315,4 +323,20 @@ end
 
 function pushPlayer(pusher, pushed)
 	pushed:SetVelocity(Vector(pusher:GetAimVector().x,pusher:GetAimVector().y,0)*pushMultiplier)
+end
+
+function playSound(cesta)
+	net.Start("Sound")
+		net.WriteString(cesta)
+	net.Broadcast()
+end
+
+function playSoundPly(cesta, ply)
+	net.Start("Sound")
+		net.WriteString(cesta)
+	net.Send(ply)
+end
+
+function setRoundReminder(delayR)
+	reminder = RealTime() + delayR
 end

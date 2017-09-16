@@ -1,0 +1,2 @@
+- Přidat powerupy, propy které budou barevně odlišeny a při bouchnutí dostane hráč powerup 
+(Silnější údery, víc HP, atd..)
