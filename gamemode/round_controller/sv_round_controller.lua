@@ -84,6 +84,7 @@ function endRound()
 	end
 	deleteProps()
 	respawnSpectators()
+	resetPowerups()
 	if(difficulty >= 10) then
 		maxPoints = -10000
 		insertWinner = true

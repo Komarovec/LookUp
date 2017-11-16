@@ -4,18 +4,18 @@ AddCSLuaFile("shared.lua")
 include("shared.lua")
 
 -- Other scripts
-AddCSLuaFile("round_controller/cl_round_controller.lua")
+AddCSLuaFile("round_controller/sv_round_controller.lua")
 include("round_controller/sv_round_controller.lua")
 
 AddCSLuaFile("prop_rain/sv_prop_rain.lua")
 include("prop_rain/sv_prop_rain.lua")
 
+AddCSLuaFile("entities/powerup/init.lua")
+
 -- Gamemode type
 DeriveGamemode("base")
 
 -- Network Att
-util.AddNetworkString("OpenWeaponry")
-util.AddNetworkString("GiveWeapon")
 util.AddNetworkString("ChatText")
 util.AddNetworkString("ScreenText")
 util.AddNetworkString("ScreenTextWinner")
@@ -39,21 +39,11 @@ local respawn = {}
 local reminder = 0
 local spawnNormal
 local stargate = true
+ultraPush = {}
 gamePlayers = {}
 
 -- Hooks
 hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
-	if(string.sub(text, 1, 9) == "!weaponry" && getRoundStatus() >= 0) then
-		sendMess("Weapons are not available when in-game!", ply)
-	elseif(string.sub(text, 1, 9) == "!weaponry" && getRoundStatus() == -1) then
-		ply:StripWeapons()
-		net.Start("OpenWeaponry")
-		net.Send(ply)
-		net.Receive("GiveWeapon", function()
-			local weapon = net.ReadString()
-			ply:Give(weapon, false)
-		end)
-	end
 	if(string.sub(text, 1, 11) == "!beginRound" || string.sub(text, 1, 11) == "!roundBegin" ) then
 		initializeRound()
 	end
@@ -65,7 +55,7 @@ hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
 			changeDifficulty(2)
 			broadcastMess("Game difficulty changed to 2!")
 		else
-			sendMess("None or incorrect setting entered! Choose between 1 - (defualt) or 2 - (2x harder).", ply)
+			sendMess("None or incorrect setting entered! Choose between 1 - (default) or 2 - (2x harder).", ply)
 		end
 	end
 	if(string.sub(text, 1, 7) == "!status") then
@@ -322,7 +312,11 @@ function deleteStats(ply)
 end
 
 function pushPlayer(pusher, pushed)
-	pushed:SetVelocity(Vector(pusher:GetAimVector().x,pusher:GetAimVector().y,0)*pushMultiplier)
+	local power = 1
+	for k, v in pairs(ultraPush) do
+		if(v == pusher) then power = 5 end
+	end
+	pushed:SetVelocity(Vector(pusher:GetAimVector().x,pusher:GetAimVector().y,0)*pushMultiplier*power)
 end
 
 function playSound(cesta)
@@ -339,4 +333,19 @@ end
 
 function setRoundReminder(delayR)
 	reminder = RealTime() + delayR
+end
+
+function givePowerup(ply)
+	local r = math.random(1,2)
+	if(r == 1) then
+		sendScrMess("pu-100", ply)
+		addPoints(ply, 100)
+	elseif(r == 2) then
+		sendScrMess("pu-power", ply)
+		table.insert(ultraPush, ply)
+	end
+end
+
+function resetPowerups()
+	ultraPush = {}
 end

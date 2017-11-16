@@ -12,6 +12,7 @@ local Rand = 0
 local spawnedProps = 0
 local maxSpawned = 0
 local funWave = 0
+local powerUp = false
 
 -- Hooks
 hook.Add("Think", "PropSpawnTimer", function()
@@ -24,6 +25,9 @@ hook.Add("Think", "NextWaveTimer", function()
 	for k, v in pairs(ents.FindByClass("prop_physics")) do
 		v:Remove()
 	end
+	for k, v in pairs(ents.FindByClass("powerup")) do
+		v:Remove()
+	end
 	funWave = 0
 	if(math.random(1,5) == 5) then
 		funWave = math.random(1,3)
@@ -33,6 +37,7 @@ hook.Add("Think", "NextWaveTimer", function()
 	end
 	WaveTimeFinal = RealTime() + WaveTime
 	spawnedProps = 0
+	powerUp = false
 end)
 
 -- Functions
@@ -79,28 +84,34 @@ function spawnProps()
 	spawnedProps = spawnedProps + 1
 end
 
-function spawnProp(pos)	
-	barrel=ents.Create("prop_physics")
+function spawnProp(pos)
+	if(powerUp == false || math.random(0,100) == 100) then
+		barrel=ents.Create("powerup")
+		barrel:SetMaterial("models/props_combine/tprings_globe", true)
+		powerUp = true
+	else
+		barrel=ents.Create("prop_physics")
+	end
 	if(funWave == 0) then
 		Rand = math.random(1,15)
 		if(Rand == 1) then barrel:SetModel("models/props_c17/furnitureStove001a.mdl")
-			elseif(Rand == 2) then barrel:SetModel("models/props_c17/oildrum001.mdl")
-			elseif(Rand == 3) then barrel:SetModel("models/props_c17/display_cooler01a.mdl")
-			elseif(Rand == 4) then barrel:SetModel("models/props_interiors/VendingMachineSoda01a.mdl")
-			elseif(Rand == 5) then barrel:SetModel("models/props_c17/FurnitureFridge001a.mdl")
-			elseif(Rand == 6) then barrel:SetModel("models/props_c17/FurnitureWashingmachine001a.mdl")
-			elseif(Rand == 7) then barrel:SetModel("models/props_junk/TrashBin01a.mdl")
-			elseif(Rand == 8) then barrel:SetModel("models/props_c17/FurnitureCouch001a.mdl")
-			elseif(Rand == 9) then barrel:SetModel("models/props_interiors/BathTub01a.mdl")
-			elseif(Rand == 10) then barrel:SetModel("models/props_lab/monitor02.mdl") 
-			elseif(Rand == 11) then barrel:SetModel("models/props_junk/TrashDumpster01a.mdl") 
-			elseif(Rand == 12) then 
-				barrel:SetModel("models/props_c17/oildrum001_explosive.mdl")
-				if(math.random(1,2) == 2) then barrel:Ignite(20) end
-			elseif(Rand == 13) then barrel:SetModel("models/props_wasteland/kitchen_counter001c.mdl") 
-			elseif(Rand == 14) then barrel:SetModel("models/props_junk/CinderBlock01a.mdl") 
-			elseif(Rand == 15) then barrel:SetModel("models/props_wasteland/wheel03b.mdl") 
-		end
+		elseif(Rand == 2) then barrel:SetModel("models/props_c17/oildrum001.mdl")
+		elseif(Rand == 3) then barrel:SetModel("models/props_c17/display_cooler01a.mdl")
+		elseif(Rand == 4) then barrel:SetModel("models/props_interiors/VendingMachineSoda01a.mdl")
+		elseif(Rand == 5) then barrel:SetModel("models/props_c17/FurnitureFridge001a.mdl")
+		elseif(Rand == 6) then barrel:SetModel("models/props_c17/FurnitureWashingmachine001a.mdl")
+		elseif(Rand == 7) then barrel:SetModel("models/props_junk/TrashBin01a.mdl")
+		elseif(Rand == 8) then barrel:SetModel("models/props_c17/FurnitureCouch001a.mdl")
+		elseif(Rand == 9) then barrel:SetModel("models/props_interiors/BathTub01a.mdl")
+		elseif(Rand == 10) then barrel:SetModel("models/props_lab/monitor02.mdl") 
+		elseif(Rand == 11) then barrel:SetModel("models/props_junk/TrashDumpster01a.mdl") 
+		elseif(Rand == 12) then
+			barrel:SetModel("models/props_c17/oildrum001_explosive.mdl")
+			if(math.random(1,2) == 2) then barrel:Ignite(20) end
+		elseif(Rand == 13) then barrel:SetModel("models/props_wasteland/kitchen_counter001c.mdl") 
+		elseif(Rand == 14) then barrel:SetModel("models/props_junk/CinderBlock01a.mdl") 
+		elseif(Rand == 15) then barrel:SetModel("models/props_wasteland/wheel03b.mdl") 
+	end
 	elseif(funWave == 1) then barrel:SetModel("models/props_interiors/VendingMachineSoda01a.mdl")
 	elseif(funWave == 2) then 
 		barrel:SetModel("models/props_c17/oildrum001_explosive.mdl") 
@@ -114,6 +125,9 @@ end
 function deleteProps()
 	SpawningProps = false
 	for k, v in pairs(ents.FindByClass("prop_physics")) do
+		v:Remove()
+	end
+	for k, v in pairs(ents.FindByClass("powerup")) do
 		v:Remove()
 	end
 end
