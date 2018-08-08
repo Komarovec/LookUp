@@ -1,1 +1,3 @@
 - Zfunkčnit víc map + automaticky pripravit neznamou mapu
+- Better UI
+- Udělat Padání propu na GUI při začátku roundu

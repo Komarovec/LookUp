@@ -20,6 +20,7 @@ util.AddNetworkString("ChatText")
 util.AddNetworkString("ScreenText")
 util.AddNetworkString("ScreenTextWinner")
 util.AddNetworkString("Sound")
+util.AddNetworkString("WaveType")
 
 net.Receive("ReloadAll", function()
 	local weapon = net.ReadString()
@@ -29,8 +30,21 @@ end)
 -- Settings
 pushMultiplier = 2000
 
+-- Map Check
+mapName = game.GetMap();
+if(mapName == "gm_flatgrass") then
+	propsSpawnpoint = Vector(0, 0, -12287)
+	deathLine = -12400
+elseif(mapName == "gm_construct") then
+	propsSpawnpoint = Vector(-458, 265, -84)
+	deathLine = -12400
+else
+	propsSpawnpoint = Vector(0, 0, 0)
+	deathLine = 0
+	mapName = "UNSUP"
+end
+
 -- Vars
-local deathLine = -12400 -- Depens on map, working only on flatgrass!
 local spectators = {}
 local queue = {}
 local dead = {}
@@ -46,8 +60,7 @@ gamePlayers = {}
 hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
 	if(string.sub(text, 1, 11) == "!beginRound" || string.sub(text, 1, 11) == "!roundBegin" ) then
 		initializeRound()
-	end
-	if(string.sub(text, 1, 11) == "!difficulty") then
+	elseif(string.sub(text, 1, 11) == "!difficulty") then
 		if(string.sub(text, 13, 13) == "1") then
 			changeDifficulty(1)
 			broadcastMess("Game difficulty changed to 1 (default)!")
@@ -57,17 +70,13 @@ hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
 		else
 			sendMess("None or incorrect setting entered! Choose between 1 - (default) or 2 - (2x harder).", ply)
 		end
-	end
-	if(string.sub(text, 1, 7) == "!status") then
+	elseif(string.sub(text, 1, 6) == "!stats") then
 		status(ply)
-	end
-	if(string.sub(text, 1, 9) == "!forceEnd") then
+	elseif(string.sub(text, 1, 9) == "!forceEnd") then
 		forceEnd()
-	end
-	if(string.sub(text, 1, 7) == "!points") then
+	elseif(string.sub(text, 1, 7) == "!points") then
 		printPoints(ply)
-	end
-	if(string.sub(text, 1, 11) == "!playersAll") then
+	elseif(string.sub(text, 1, 11) == "!playersAll") then
 		sendMess("--- Printing game players:", ply)
 		for k, v in pairs(getGamePlayers()) do
 			sendMess(k.." "..v:Nick(), ply)
@@ -84,10 +93,20 @@ hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
 		for k, v in pairs(getQueue()) do
 			sendMess(k.." "..v:Nick(), ply)
 		end
+	elseif(string.sub(text, 1, 5) == "!help") then
+		sendMess("List of Commands:", ply)
+		sendMess("!beginRound -- Start a round", ply)
+		sendMess("!difficulty <1-2> -- Change difficulty", ply)
+		sendMess("!stats -- Shows players points", ply)
+		sendMess("- Debug Commands -", ply)
+		sendMess("!forceEnd -- Forces end of the game", ply)
+		sendMess("!points -- Prints point table", ply)
+		sendMess("!playersAll -- Prints every player table", ply)
 	end
 end)
 
 hook.Add("Think", "MapLimiter", function()
+	if(mapName == "UNSUP") then return end
 	for k, v in pairs(player.GetAll()) do
 		if(v:GetPos().z < deathLine) then
 			for k1, v1 in pairs(spectators) do
@@ -212,6 +231,10 @@ function giveAmmo(ply)
 end
 
 function initializeRound()
+	if(mapName == "UNSUP") then
+		broadcastScrMess("Unsupported map!")
+		return;
+	end
 	gamePlayers = player.GetAll()
 	initializePoints()
 	setDifficulty(0)
@@ -299,6 +322,7 @@ end
 function status(ply)
 	sendMess("-- All players stats:", ply)
 	for k, v in pairs(getGamePlayers()) do
+		if(v == nil) then break end
 		sendMess("Player ("..v:Nick()..") has "..getPoints(v).." points.", ply)
 	end
 end
@@ -314,7 +338,7 @@ end
 function pushPlayer(pusher, pushed)
 	local power = 1
 	for k, v in pairs(ultraPush) do
-		if(v == pusher) then power = 5 end
+		if(v == pusher) then power = 10 end
 	end
 	pushed:SetVelocity(Vector(pusher:GetAimVector().x,pusher:GetAimVector().y,0)*pushMultiplier*power)
 end

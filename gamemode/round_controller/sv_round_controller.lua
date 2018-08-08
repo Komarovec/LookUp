@@ -1,6 +1,6 @@
 -- Settings
-roundTime = 60
-roundCooldown = 15
+roundTime = 5 -- default 60
+roundCooldown = 1 -- default 15
 
 -- Vars
 local round_status = -1 -- 0 = pozastaveno , 1 = aktivní, -1 = neběži
@@ -23,16 +23,17 @@ points = {}
 util.AddNetworkString("UpdateRoundStatus")
 util.AddNetworkString("Points")
 util.AddNetworkString("Timer")
+util.AddNetworkString("RoundChange")
 
 -- Hooks
 hook.Add("Think", "TimeDelay", function()
 	if(RealTime() < roundTimer || timerA == false) then return end
-		timerA = false
-		if(round_status == 1) then
-			endRound()
-		else
-			beginRound()
-		end
+	timerA = false
+	if(round_status == 1) then
+		endRound()
+	else
+		beginRound()
+	end
  end)
 
 hook.Add("Think", "updateTimer", function()
@@ -70,15 +71,17 @@ function Round()
 	difficulty = difficulty + 1
 	initializeProps(difficulty)
 	playSound("ding.mp3")
+	updateRound(difficulty)
 	broadcastScrMess("Props are falling from the sky! Round: "..difficulty..", Spawning "..getMaxProps().." props each wave!")
 end
 
 function endRound()
 	round_status = 0
+	broadcastWaveType("wait")
 	for k, v in pairs(getGamePlayers()) do
 		noReward = false
 		for k1, v1 in pairs(getDeadPlayers()) do
-			if(v == v1) then noReward = true end
+			if(v == v1) then w = true end
 		end
 		if(noReward == false) then addPoints(v, 100) end
 	end
@@ -129,6 +132,7 @@ function endRound()
 			setRoundReminder(10)
 			timerA = false
 			roundTimer = 0
+			updateRound(0)
 			resetPoints()
 			spawnQueue()
 		end
@@ -198,6 +202,7 @@ function forceEnd()
 	timerA = false
 	roundTimer = 0
 	resetPoints()
+	updateRound(0)
 	spawnQueue()
 end
 
@@ -211,5 +216,11 @@ end
 function updateTimer(time)
 	net.Start("Timer")
 		net.WriteInt(time, 16)
+	net.Broadcast()
+end
+
+function updateRound(round)
+	net.Start("RoundChange")
+		net.WriteString(round)
 	net.Broadcast()
 end

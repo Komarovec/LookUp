@@ -1,6 +1,5 @@
 -- Settings
 hardnessMultiplier = 1
-propsSpawnpoint = Vector(31, -9, -12287) -- Depens on map, working only on flatgrass!
 WaveTime = 5
 
 -- Vars
@@ -48,32 +47,16 @@ function initializeProps(diff)
 		print("Incorrect hardness settings! 1 or 2 !! Using default..")
 		hardnessMultiplier = 1
 	end
+
 	if(diff < 1) then
 		maxSpawned = 15 * hardnessMultiplier
 		setDifficulty(1)
 	elseif(diff == 1) then
 		maxSpawned = 15 * hardnessMultiplier
-	elseif(diff == 2) then
-		maxSpawned = 20 * hardnessMultiplier
-	elseif(diff == 3) then
-		maxSpawned = 30 * hardnessMultiplier
-	elseif(diff == 4) then
-		maxSpawned = 40 * hardnessMultiplier
-	elseif(diff == 5) then
-		maxSpawned = 50 * hardnessMultiplier
-	elseif(diff == 6) then
-		maxSpawned = 60 * hardnessMultiplier
-	elseif(diff == 7) then
-		maxSpawned = 70 * hardnessMultiplier
-	elseif(diff == 8) then
-		maxSpawned = 80 * hardnessMultiplier
-	elseif(diff == 9) then
-		maxSpawned = 90 * hardnessMultiplier
-	elseif(diff == 10) then
-		maxSpawned = 100 * hardnessMultiplier
-	elseif(diff > 10) then
-		maxSpawned = 100 * hardnessMultiplier
+	else
+		maxSpawned = diff * 10 * hardnessMultiplier
 	end
+
 	funWave = 0
 	WaveTimeFinal = RealTime() + WaveTime
 	SpawningProps = true
@@ -85,14 +68,18 @@ function spawnProps()
 end
 
 function spawnProp(pos)
-	if(powerUp == false || math.random(0,100) == 100) then
+	-- powerUp prop rand
+	if(powerUp == false && math.random(0,100) == 100) then
 		barrel=ents.Create("powerup")
 		barrel:SetMaterial("models/props_combine/tprings_globe", true)
 		powerUp = true
 	else
 		barrel=ents.Create("prop_physics")
 	end
+
+	-- normal Wave model rand
 	if(funWave == 0) then
+		broadcastWaveType("normal");
 		Rand = math.random(1,15)
 		if(Rand == 1) then barrel:SetModel("models/props_c17/furnitureStove001a.mdl")
 		elseif(Rand == 2) then barrel:SetModel("models/props_c17/oildrum001.mdl")
@@ -111,15 +98,31 @@ function spawnProp(pos)
 		elseif(Rand == 13) then barrel:SetModel("models/props_wasteland/kitchen_counter001c.mdl") 
 		elseif(Rand == 14) then barrel:SetModel("models/props_junk/CinderBlock01a.mdl") 
 		elseif(Rand == 15) then barrel:SetModel("models/props_wasteland/wheel03b.mdl") 
-	end
-	elseif(funWave == 1) then barrel:SetModel("models/props_interiors/VendingMachineSoda01a.mdl")
+		end
+	-- vending wave model
+	elseif(funWave == 1) then 
+		barrel:SetModel("models/props_interiors/VendingMachineSoda01a.mdl")
+		broadcastWaveType("vending");
+	-- explosive wave model
 	elseif(funWave == 2) then 
 		barrel:SetModel("models/props_c17/oildrum001_explosive.mdl") 
 		barrel:Ignite(20)
-	elseif(funWave == 3) then barrel:SetModel("models/props_wasteland/cargo_container01.mdl") end
+		broadcastWaveType("explosive");
+	-- cargo wave model
+	elseif(funWave == 3) then 
+		barrel:SetModel("models/props_wasteland/cargo_container01.mdl")
+		broadcastWaveType("cargo");
+	end
+
 	barrel:SetPos(pos)
 	barrel:SetAngles(Angle(math.Rand(0,360),math.Rand(0,360),math.Rand(0,360)))
 	barrel:Spawn()
+end
+
+function broadcastWaveType(type) 
+	net.Start("WaveType")
+		net.WriteString(type)
+	net.Broadcast()
 end
 
 function deleteProps()

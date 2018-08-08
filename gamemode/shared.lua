@@ -1,4 +1,4 @@
-GM.Name = "Compound"
+GM.Name = "LookUp"
 
 function GM:Initialize()
 
