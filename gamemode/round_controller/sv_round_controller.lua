@@ -2,7 +2,7 @@
 roundTime = 60 -- default 60
 roundCooldown = 15 -- default 15
 
--- Vars
+-- Variables
 local round_status = -1 -- 0 = pozastaveno , 1 = aktivní, -1 = neběži
 local roundTimer = 0
 local timerA = false

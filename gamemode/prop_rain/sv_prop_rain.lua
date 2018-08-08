@@ -2,7 +2,7 @@
 hardnessMultiplier = 1
 WaveTime = 5
 
--- Vars
+-- Variables
 local Props = {}
 local SpawningProps = false
 local WaveTimer = false

@@ -7,12 +7,18 @@ local points = 0
 local timerTime = "0"
 local text = ""
 local curRound = "0"
-local font = "CloseCaption_Normal"
+font = "CloseCaption_Normal"
 
 -- UI Odpocet + PointCounter
 local Shape = vgui.Create("DShape")
-local widthIndex = ScrW()/1920
-local heightIndex = ScrH()/1080
+local screenRatio = ScrW()/ScrH();
+if(screenRatio < 1.8 && screenRatio > 1.7) then
+	widthIndex = ScrW()/1920
+	heightIndex = ScrH()/1080
+else
+	widthIndex = 1
+	heightIndex = 1
+end
 Shape:SetType("Rect")
 Shape:SetPos(ScrW()/2 - (50*widthIndex), -(20*heightIndex))
 Shape:SetSize(100*widthIndex,80*heightIndex)
@@ -21,8 +27,9 @@ Shape.Paint = function(s, w ,h)
 	Shape:SetPos(ScrW()/2 - (50*widthIndex), -(20*heightIndex))
 	font = "CloseCaption_Normal"
 	if(widthIndex >= 1.5 || heightIndex >= 1.5) then font = "DermaLarge" end
-	draw.SimpleTextOutlined(timerTime, font, 50*widthIndex, 62*heightIndex, Color(100, 100, 100, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 0.5, Color(100, 100, 100,255))
-	draw.SimpleTextOutlined(tostring(points), font, 50*widthIndex, 32*heightIndex, Color(100, 100, 100, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 0.5, Color(100, 100, 100,255))
+	if(widthIndex < 0.9 || heightIndex < 0.9) then font = "Trebuchet18" end
+	draw.SimpleTextOutlined(timerTime, font, 50*widthIndex, 62*heightIndex, Color(100, 100, 100, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 0.1, Color(100, 100, 100,255))
+	draw.SimpleTextOutlined(tostring(points), font, 50*widthIndex, 32*heightIndex, Color(100, 100, 100, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 0.1, Color(100, 100, 100,255))
 end
 
 -- UI ScreenMess
@@ -66,7 +73,7 @@ RoundCounter:SetSize(RCw*widthIndex,RCh*heightIndex)
 RoundCounter:SetZPos(-1)
 RoundCounter.Paint = function(s, w ,h)
 	draw.RoundedBox(20*widthIndex, 0, 0, w, h, Color(255, 255, 255, 128))	
-	draw.SimpleTextOutlined("Round: "..curRound.."/10", font, (RCw/2)*widthIndex, (RCh/2)*heightIndex, Color(100, 100, 100, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 0.5, Color(100, 100, 100,255))
+	draw.SimpleTextOutlined("Round: "..curRound.."/10", font, (RCw/2)*widthIndex, (RCh/2)*heightIndex, Color(100, 100, 100, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 0.1, Color(100, 100, 100,255))
 end
 
 net.Receive("Points", function()
