@@ -72,7 +72,7 @@ function Round()
 	initializeProps(difficulty)
 	playSound("ding.mp3")
 	updateRound(difficulty)
-	broadcastScrMess("Props are falling from the sky! Round: "..difficulty..", Spawning "..getMaxProps().." props each wave!")
+	broadcastScrMess("Look Up! Props are falling from the sky!")
 end
 
 function endRound()
@@ -81,7 +81,7 @@ function endRound()
 	for k, v in pairs(getGamePlayers()) do
 		noReward = false
 		for k1, v1 in pairs(getDeadPlayers()) do
-			if(v == v1) then w = true end
+			if(v == v1) then noReward = true end
 		end
 		if(noReward == false) then addPoints(v, 100) end
 	end
@@ -134,7 +134,6 @@ function endRound()
 			roundTimer = 0
 			updateRound(0)
 			resetPoints()
-			spawnQueue()
 		end
 		return
 	else
@@ -203,7 +202,6 @@ function forceEnd()
 	roundTimer = 0
 	resetPoints()
 	updateRound(0)
-	spawnQueue()
 end
 
 function printPoints(ply)
@@ -220,6 +218,10 @@ function updateTimer(time)
 end
 
 function updateRound(round)
+	net.Start("PropChange")
+		net.WriteString(getMaxProps())
+	net.Broadcast()
+	
 	net.Start("RoundChange")
 		net.WriteString(round)
 	net.Broadcast()

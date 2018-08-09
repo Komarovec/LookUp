@@ -21,6 +21,7 @@ util.AddNetworkString("ScreenText")
 util.AddNetworkString("ScreenTextWinner")
 util.AddNetworkString("Sound")
 util.AddNetworkString("WaveType")
+util.AddNetworkString("PropChange")
 
 net.Receive("ReloadAll", function()
 	local weapon = net.ReadString()
@@ -38,6 +39,9 @@ if(mapName == "gm_flatgrass") then
 elseif(mapName == "gm_construct") then
 	propsSpawnpoint = Vector(-458, 265, -84)
 	deathLine = -12400
+elseif(mapName == "lu_canals") then
+	propsSpawnpoint = Vector(0, 0, 0)
+	deathLine = -400
 else
 	propsSpawnpoint = Vector(0, 0, 0)
 	deathLine = 0
@@ -91,7 +95,7 @@ hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
 		end
 		sendMess("--- Printing queue:", ply)
 		for k, v in pairs(getQueue()) do
-			sendMess(k.." "..v:Nick(), ply)
+			sendMess(k.." "..v, ply)
 		end
 	elseif(string.sub(text, 1, 5) == "!help") then
 		sendMess("List of Commands:", ply)
@@ -110,9 +114,6 @@ hook.Add("Think", "MapLimiter", function()
 	for k, v in pairs(player.GetAll()) do
 		if(v:GetPos().z < deathLine) then
 			for k1, v1 in pairs(spectators) do
-				if(v1 == v) then return end
-			end
-			for k1, v1 in pairs(queue) do
 				if(v1 == v) then return end
 			end
 			for k1, v1 in pairs(dead) do
@@ -147,9 +148,6 @@ hook.Add("PostPlayerDeath", "DeathMessage", function(ply)
 	for k, v in pairs(spectators) do
 		if(ply == v) then return end
 	end
-	for k, v in pairs(queue) do
-		if(ply == v) then return end
-	end
 	for k, v in pairs(dead) do
 		if(ply == v) then return end
 	end
@@ -161,7 +159,9 @@ end)
 
 -- Functions
 function GM:PlayerConnect(name, ip)
-	broadcastMess(name.." has connected to the server!")
+	if(getRoundStatus() >= 0) then
+		table.insert(queue, name)
+	end
 end
 
 function GM:PlayerDisconnected(ply)
@@ -170,25 +170,23 @@ function GM:PlayerDisconnected(ply)
 end
 
 function GM:PlayerSpawn(ply)
-	spawnNormal = false
-	if(getRoundStatus() >= 0) then
-		for k, v in pairs(gamePlayers) do
-			if(ply == v) then spawnNormal = true end
-		end
-	end
-
 	self.BaseClass:PlayerSpawn(ply)
 	ply:SetModel("models/player/Police.mdl") -- player model
 
-	if(getRoundStatus() >= 0 && spawnNormal == false) then
-		ply:Spectate(6)
-		for k, v in pairs(queue) do
-			if(ply == v) then return end
+	if(getRoundStatus() >= 0) then
+		for k, v in pairs(player.GetAll()) do
+			for k1, v1 in pairs(queue) do
+				if(v:Nick() == v1) then
+					table.insert(gamePlayers, v)
+					table.insert(dead, v)
+					table.insert(points, 0)
+					table.RemoveByValue(queue, v1)
+				end
+			end
 		end
-		broadcastMess(ply:Nick().." has been added to the queue!")
-		table.insert(queue, ply)
+	end
 
-	elseif(getRoundStatus() == 1 && spawnNormal == true) then 
+	if(getRoundStatus() == 1) then 
 		ply:Spectate(6)
 		for k, v in pairs(spectators) do
 			if(ply == v) then return end
@@ -283,19 +281,6 @@ function respawnSpectators()
 	respawn = {}
 end
 
-function spawnQueue()
-	respawn = {}
-	for k, v in pairs(getQueue()) do
-		table.insert(respawn, v)
-	end
-	for k, v in pairs(respawn) do
-		v:UnSpectate()
-		v:Spawn()
-	end
-	respawn = {}
-	queue = {}
-end
-
 function getGamePlayers()
 	return gamePlayers
 end
@@ -328,11 +313,14 @@ function status(ply)
 end
 
 function deleteStats(ply)
-	table.RemoveByValue(gamePlayers, v)
-	table.RemoveByValue(points, v)
-	table.RemoveByValue(dead, v)
-	table.RemoveByValue(spectators, v)
-	table.RemoveByValue(queue, v)
+	for k, v in pairs(getGamePlayers()) do
+		if(ply == v) then
+			table.remove(points, k)
+		end
+	end
+	table.RemoveByValue(gamePlayers, ply)
+	table.RemoveByValue(dead, ply)
+	table.RemoveByValue(spectators, ply)
 end
 
 function pushPlayer(pusher, pushed)

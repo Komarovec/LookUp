@@ -48,12 +48,14 @@ function initializeProps(diff)
 		hardnessMultiplier = 1
 	end
 
-	if(diff < 1) then
+	-- 1tý round
+	if(diff == 1) then
 		maxSpawned = 15 * hardnessMultiplier
-		setDifficulty(1)
-	elseif(diff == 1) then
-		maxSpawned = 15 * hardnessMultiplier
-	else
+	-- OT Round
+	elseif(diff > 10) then
+		maxSpawned = 100 * hardnessMultiplier
+	-- 2-10 round
+ 	else
 		maxSpawned = diff * 10 * hardnessMultiplier
 	end
 
