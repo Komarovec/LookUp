@@ -83,6 +83,9 @@ function endRound()
 		for k1, v1 in pairs(getDeadPlayers()) do
 			if(v == v1) then noReward = true end
 		end
+		for k1, v1 in pairs(getSpectators()) do
+			if(v == v1) then noReward = true end
+		end
 		if(noReward == false) then addPoints(v, 100) end
 	end
 	deleteProps()
@@ -172,6 +175,7 @@ function addPoints(ply, ps)
 			net.Send(ply)
 		end
 	end
+	broadcastTables()
 end
 
 function getPoints(ply)
@@ -191,6 +195,7 @@ function resetPoints()
 	net.Start("Points")
 			net.WriteInt(0, 16)
 	net.Broadcast()
+	broadcastTables()
 end
 
 function forceEnd()

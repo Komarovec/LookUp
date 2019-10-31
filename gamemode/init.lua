@@ -22,11 +22,10 @@ util.AddNetworkString("ScreenTextWinner")
 util.AddNetworkString("Sound")
 util.AddNetworkString("WaveType")
 util.AddNetworkString("PropChange")
-
-net.Receive("ReloadAll", function()
-	local weapon = net.ReadString()
-	ply:Give(weapon, false)
-end)
+util.AddNetworkString("PointTable")
+util.AddNetworkString("GameplayersTable")
+util.AddNetworkString("SpectatorsTable")
+util.AddNetworkString("tables")
 
 -- Settings
 pushMultiplier = 2000
@@ -125,7 +124,7 @@ hook.Add("Think", "MapLimiter", function()
 end)
 
 hook.Add("Think", "NoPlayerEnd", function()
-	if(table.Count(player.GetAll()) == table.Count(dead) && getRoundStatus() == 1) then
+	if(table.Count(getGamePlayers()) == (table.Count(spectators)+table.Count(dead)) && getRoundStatus() == 1) then
 		endRound()
 	end
 end)
@@ -146,15 +145,26 @@ end)
 
 hook.Add("PostPlayerDeath", "DeathMessage", function(ply)
 	for k, v in pairs(spectators) do
-		if(ply == v) then return end
+		if(ply == v) then 
+			table.RemoveByValue(spectators, ply)
+		end
 	end
+
+	timer.Simple(3, function()
+		for k,v in pairs(dead) do
+			if(v == ply) then
+				ply:Spawn() 
+			end
+		end 
+    end) 
+
 	for k, v in pairs(dead) do
-		if(ply == v) then return end
+		if(ply == v) then
+			broadcastMess("Bug found!! DEBUG CODE: PPD01")
+			return
+		end
 	end
 	table.insert(dead, ply)
-	timer.Simple(3, function()  
-        ply:Spawn()  
-    end) 
 end)
 
 -- Functions
@@ -173,21 +183,22 @@ function GM:PlayerSpawn(ply)
 	self.BaseClass:PlayerSpawn(ply)
 	ply:SetModel("models/player/Police.mdl") -- player model
 
-	if(getRoundStatus() >= 0) then
+	if(getRoundStatus() >= 0 && queue[1] != nil) then
 		for k, v in pairs(player.GetAll()) do
 			for k1, v1 in pairs(queue) do
 				if(v:Nick() == v1) then
 					table.insert(gamePlayers, v)
-					table.insert(dead, v)
 					table.insert(points, 0)
 					table.RemoveByValue(queue, v1)
 				end
 			end
 		end
+		broadcastTables()
 	end
 
 	if(getRoundStatus() == 1) then 
 		ply:Spectate(6)
+		table.RemoveByValue(dead, ply)
 		for k, v in pairs(spectators) do
 			if(ply == v) then return end
 		end
@@ -197,7 +208,6 @@ function GM:PlayerSpawn(ply)
 	elseif(getRoundStatus() == 0 || getRoundStatus() == -1) then 
 		table.RemoveByValue(dead, ply)
 		table.RemoveByValue(spectators, ply)
-		table.RemoveByValue(queue, ply)
 		ply:Give("weapon_crowbar", true)
 
 	else
@@ -263,11 +273,44 @@ function broadcastMess(mess)
 	net.Broadcast()
 end
 
+function broadcastTables()
+	net.Start("PointTable")
+		net.WriteTable(points)
+	net.Broadcast()
+
+	net.Start("GameplayersTable")
+		net.WriteTable(getGamePlayers())
+	net.Broadcast()
+
+	net.Start("SpectatorsTable")
+		net.WriteTable(getSpectators())
+	net.Broadcast()
+end
+
 function sendMess(mess, ply)
 	net.Start("ChatText")
 		net.WriteString(mess)
 	net.Send(ply)
 end
+
+net.Receive("ReloadAll", function(ln, ply)
+	local weapon = net.ReadString()
+	ply:Give(weapon, false)
+end)
+
+net.Receive("tables", function(ln, ply)
+	net.Start("PointTable")
+		net.WriteTable(points)
+	net.Send(ply)
+
+	net.Start("GameplayersTable")
+		net.WriteTable(getGamePlayers())
+	net.Send(ply)
+
+	net.Start("SpectatorsTable")
+		net.WriteTable(getSpectators())
+	net.Send(ply)
+end)
 
 function respawnSpectators()
 	respawn = {}

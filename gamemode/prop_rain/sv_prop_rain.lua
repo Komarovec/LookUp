@@ -28,7 +28,7 @@ hook.Add("Think", "NextWaveTimer", function()
 		v:Remove()
 	end
 	funWave = 0
-	if(math.random(1,5) == 5) then
+	if(math.random(4,5) == 5) then
 		funWave = math.random(1,3)
 		if(funWave == 1) then broadcastScrMess("Vending wave!")
 		elseif(funWave == 2) then broadcastScrMess("Explosive wave!")
