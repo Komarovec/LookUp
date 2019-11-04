@@ -64,7 +64,7 @@ hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
 	if(string.sub(text, 1, 11) == "!beginRound" || string.sub(text, 1, 11) == "!roundBegin" ) then -- Begin new round -- All users, voting system?
 		initializeRound()
 	elseif(string.sub(text, 1, 11) == "!difficulty") then -- Change difficulty --> only admins
-		if(ply.IsAdmin()) then
+		if(ply:IsAdmin()) then
 			if(string.sub(text, 13, 13) == "1") then
 				changeDifficulty(1)
 				broadcastMess("Game difficulty changed to 1 (default)!")
@@ -80,10 +80,10 @@ hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
 	elseif(string.sub(text, 1, 6) == "!stats") then -- Prints information about points, positions
 		status(ply)
 	elseif(string.sub(text, 1, 9) == "!forceEnd") then -- Force end the game --> only admins
-		if(ply.IsAdmin()) then
+		if(ply:IsAdmin()) then
 			forceEnd()
 		else
-			sendMess("Only admins can use  this commands!", ply)
+			sendMess("Only admins can use  this command!", ply)
 		end
 	elseif(string.sub(text, 1, 7) == "!points") then -- Debug functions
 		printPoints(ply)
