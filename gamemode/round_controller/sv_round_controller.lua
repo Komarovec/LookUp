@@ -26,7 +26,7 @@ util.AddNetworkString("Timer")
 util.AddNetworkString("RoundChange")
 
 -- Hooks
-hook.Add("Think", "TimeDelay", function()
+hook.Add("Think", "TimeDelay", function() -- End round when timeout; or start round when timeout
 	if(RealTime() < roundTimer || timerA == false) then return end
 	timerA = false
 	if(round_status == 1) then
@@ -36,7 +36,7 @@ hook.Add("Think", "TimeDelay", function()
 	end
  end)
 
-hook.Add("Think", "updateTimer", function()
+hook.Add("Think", "updateTimer", function() -- Update GUI timer
 	if(getRoundStatus() == -1) then 
 		updateTimer(0)
 		return
@@ -45,7 +45,7 @@ hook.Add("Think", "updateTimer", function()
 end)
 
 -- Functions
-function beginRound()
+function beginRound() -- Begin round, heal players, check difficulty, check overtime, start the round
 	round_status = 1
 	for k, v in pairs(getGamePlayers()) do
 		v:SetHealth(100)
@@ -65,7 +65,7 @@ function beginRound()
 	Round()
 end
 
-function Round()
+function Round() -- Start the round, increase time, raise difficulty, init props
 	roundTimer = RealTime() + roundTime
 	timerA = true
 	difficulty = difficulty + 1
@@ -75,10 +75,10 @@ function Round()
 	broadcastScrMess("Look Up! Props are falling from the sky!")
 end
 
-function endRound()
+function endRound() -- Give rewards to players, delete props, respawn spectators, reset powerups, check overtime players, sort points, show winner
 	round_status = 0
 	broadcastWaveType("wait")
-	for k, v in pairs(getGamePlayers()) do
+	for k, v in pairs(getGamePlayers()) do -- Players is in dead/spectator --> nno reward otherwise reward
 		noReward = false
 		for k1, v1 in pairs(getDeadPlayers()) do
 			if(v == v1) then noReward = true end

@@ -61,25 +61,33 @@ gamePlayers = {}
 
 -- Hooks
 hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
-	if(string.sub(text, 1, 11) == "!beginRound" || string.sub(text, 1, 11) == "!roundBegin" ) then
+	if(string.sub(text, 1, 11) == "!beginRound" || string.sub(text, 1, 11) == "!roundBegin" ) then -- Begin new round -- All users, voting system?
 		initializeRound()
-	elseif(string.sub(text, 1, 11) == "!difficulty") then
-		if(string.sub(text, 13, 13) == "1") then
-			changeDifficulty(1)
-			broadcastMess("Game difficulty changed to 1 (default)!")
-		elseif(string.sub(text, 13, 13) == "2") then
-			changeDifficulty(2)
-			broadcastMess("Game difficulty changed to 2!")
+	elseif(string.sub(text, 1, 11) == "!difficulty") then -- Change difficulty --> only admins
+		if(ply.IsAdmin()) then
+			if(string.sub(text, 13, 13) == "1") then
+				changeDifficulty(1)
+				broadcastMess("Game difficulty changed to 1 (default)!")
+			elseif(string.sub(text, 13, 13) == "2") then
+				changeDifficulty(2)
+				broadcastMess("Game difficulty changed to 2!")
+			else
+				sendMess("None or incorrect setting entered! Choose between 1 - (default) or 2 - (2x harder).", ply)
+			end
 		else
-			sendMess("None or incorrect setting entered! Choose between 1 - (default) or 2 - (2x harder).", ply)
+			sendMess("Only admins can change difficulty!", ply)
 		end
-	elseif(string.sub(text, 1, 6) == "!stats") then
+	elseif(string.sub(text, 1, 6) == "!stats") then -- Prints information about points, positions
 		status(ply)
-	elseif(string.sub(text, 1, 9) == "!forceEnd") then
-		forceEnd()
-	elseif(string.sub(text, 1, 7) == "!points") then
+	elseif(string.sub(text, 1, 9) == "!forceEnd") then -- Force end the game --> only admins
+		if(ply.IsAdmin()) then
+			forceEnd()
+		else
+			sendMess("Only admins can use  this commands!", ply)
+		end
+	elseif(string.sub(text, 1, 7) == "!points") then -- Debug functions
 		printPoints(ply)
-	elseif(string.sub(text, 1, 11) == "!playersAll") then
+	elseif(string.sub(text, 1, 11) == "!playersAll") then -- Debug functions
 		sendMess("--- Printing game players:", ply)
 		for k, v in pairs(getGamePlayers()) do
 			sendMess(k.." "..v:Nick(), ply)
@@ -96,7 +104,7 @@ hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
 		for k, v in pairs(getQueue()) do
 			sendMess(k.." "..v, ply)
 		end
-	elseif(string.sub(text, 1, 5) == "!help") then
+	elseif(string.sub(text, 1, 5) == "!help") then -- Shows all commands
 		sendMess("List of Commands:", ply)
 		sendMess("!beginRound -- Start a round", ply)
 		sendMess("!difficulty <1-2> -- Change difficulty", ply)
@@ -108,10 +116,10 @@ hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
 	end
 end)
 
-hook.Add("Think", "MapLimiter", function()
+hook.Add("Think", "MapLimiter", function() -- Limit the map by height limit; Kills every player below limit
 	if(mapName == "UNSUP") then return end
 	for k, v in pairs(player.GetAll()) do
-		if(v:GetPos().z < deathLine) then
+		if(v:GetPos().z < deathLine) then -- If player is spectator/dead --> do not kill
 			for k1, v1 in pairs(spectators) do
 				if(v1 == v) then return end
 			end
@@ -123,27 +131,27 @@ hook.Add("Think", "MapLimiter", function()
 	end
 end)
 
-hook.Add("Think", "NoPlayerEnd", function()
+hook.Add("Think", "NoPlayerEnd", function() -- End the round if no players left
 	if(table.Count(getGamePlayers()) == (table.Count(spectators)+table.Count(dead)) && getRoundStatus() == 1) then
 		endRound()
 	end
 end)
 
-hook.Add("Think", "Reminder", function()
+hook.Add("Think", "Reminder", function() -- Remind to start a round, when no round
 	if(getRoundStatus() == -1 && reminder < RealTime()) then
 		broadcastScrMess("To start a round type !beginRound")
 		reminder = RealTime() + 60
 	end
 end)
 
-hook.Add("Think", "StargateDelter", function()
+hook.Add("Think", "StargateDelter", function() -- Delete stargate; This is quite useless but a use stargate alot :P
 	if(stargate == true) then
 		stargate = false
 		deleteStargate()
 	end
 end)
 
-hook.Add("PostPlayerDeath", "DeathMessage", function(ply)
+hook.Add("PostPlayerDeath", "DeathMessage", function(ply) -- Start timer to respawn player, if player is spectator, remove him from spectators
 	for k, v in pairs(spectators) do
 		if(ply == v) then 
 			table.RemoveByValue(spectators, ply)
@@ -168,13 +176,13 @@ hook.Add("PostPlayerDeath", "DeathMessage", function(ply)
 end)
 
 -- Functions
-function GM:PlayerConnect(name, ip)
+function GM:PlayerConnect(name, ip) -- If game is running add players to queue, else nothing
 	if(getRoundStatus() >= 0) then
 		table.insert(queue, name)
 	end
 end
 
-function GM:PlayerDisconnected(ply)
+function GM:PlayerDisconnected(ply) -- Deletes plys records
 	deleteStats(ply)
 	broadcastMess(ply:Nick().." has left the server." )
 end
@@ -183,7 +191,7 @@ function GM:PlayerSpawn(ply)
 	self.BaseClass:PlayerSpawn(ply)
 	ply:SetModel("models/player/Police.mdl") -- player model
 
-	if(getRoundStatus() >= 0 && queue[1] != nil) then
+	if(getRoundStatus() >= 0 && queue[1] != nil) then -- If players just connected and is in queue, add him to tables and the game
 		for k, v in pairs(player.GetAll()) do
 			for k1, v1 in pairs(queue) do
 				if(v:Nick() == v1) then
@@ -196,7 +204,7 @@ function GM:PlayerSpawn(ply)
 		broadcastTables()
 	end
 
-	if(getRoundStatus() == 1) then 
+	if(getRoundStatus() == 1) then -- If players respawned while prop_fall, spectate --> no points
 		ply:Spectate(6)
 		table.RemoveByValue(dead, ply)
 		for k, v in pairs(spectators) do
@@ -205,17 +213,17 @@ function GM:PlayerSpawn(ply)
 		broadcastMess(ply:Nick().." has been added to spectators!")
 		table.insert(spectators, ply)
 
-	elseif(getRoundStatus() == 0 || getRoundStatus() == -1) then 
+	elseif(getRoundStatus() == 0 || getRoundStatus() == -1) then  -- Regular respawn while, timeout or no game
 		table.RemoveByValue(dead, ply)
 		table.RemoveByValue(spectators, ply)
 		ply:Give("weapon_crowbar", true)
 
 	else
-		broadcastMess("Shit... something went wrong, player: "..ply:Nick().." has found a bug! Debug code: SPAWN01")
+		broadcastMess("Something went wrong, player: "..ply:Nick().." has found a bug! Debug code: SPAWN01")
 	end
 end
 
-function GM:ScalePlayerDamage( ply, hitgroup, dmginfo )
+function GM:ScalePlayerDamage( ply, hitgroup, dmginfo ) -- Push other players when hit with crowbar
 	scaleDmg = 1
 	for k, v in pairs(player.GetAll()) do
 		if(dmginfo:GetAttacker() == v) then 
@@ -228,6 +236,7 @@ function GM:ScalePlayerDamage( ply, hitgroup, dmginfo )
 	dmginfo:ScaleDamage(scaleDmg)
 end
 
+--[[ Extremely dangerous function --> gives weapons and ammo
 function giveAmmo(ply)
 	ply:GiveAmmo( 200, "Pistol", true )
 	ply:GiveAmmo( 200, "AR2", true )
@@ -237,8 +246,9 @@ function giveAmmo(ply)
 	ply:GiveAmmo( 30, "357", true )
 	ply:GiveAmmo( 60, "Buckshot", true )
 end
+]]
 
-function initializeRound()
+function initializeRound() -- New game; starting with 0 points and 0 round; easiest difficulty
 	if(mapName == "UNSUP") then
 		broadcastScrMess("Unsupported map!")
 		return;
@@ -249,31 +259,31 @@ function initializeRound()
 	beginRound()
 end
 
-function broadcastScrMess(mess)
+function broadcastScrMess(mess) -- Broadcast screen message to all players
 	net.Start("ScreenText")
 		net.WriteString(mess)
 	net.Broadcast()
 end
 
-function broadcastScrWinner(mess)
+function broadcastScrWinner(mess) -- Broadcast winner message to all players
 	net.Start("ScreenTextWinner")
 		net.WriteString(mess)
 	net.Broadcast()
 end
 
-function sendScrMess(mess, ply)
+function sendScrMess(mess, ply) -- Send screen message to one player
 	net.Start("ScreenText")
 		net.WriteString(mess)
 	net.Send(ply)
 end
 
-function broadcastMess(mess)
+function broadcastMess(mess) -- Send chat message to all players
 	net.Start("ChatText")
 		net.WriteString(mess)
 	net.Broadcast()
 end
 
-function broadcastTables()
+function broadcastTables() -- Broadcast Point tables etc.. --> scoreboard update
 	net.Start("PointTable")
 		net.WriteTable(points)
 	net.Broadcast()
@@ -287,18 +297,18 @@ function broadcastTables()
 	net.Broadcast()
 end
 
-function sendMess(mess, ply)
+function sendMess(mess, ply) -- Send chat message to one player
 	net.Start("ChatText")
 		net.WriteString(mess)
 	net.Send(ply)
 end
 
-net.Receive("ReloadAll", function(ln, ply)
+net.Receive("ReloadAll", function(ln, ply) -- Give weapon to player
 	local weapon = net.ReadString()
 	ply:Give(weapon, false)
 end)
 
-net.Receive("tables", function(ln, ply)
+net.Receive("tables", function(ln, ply) -- Receive table update from players
 	net.Start("PointTable")
 		net.WriteTable(points)
 	net.Send(ply)
@@ -312,7 +322,7 @@ net.Receive("tables", function(ln, ply)
 	net.Send(ply)
 end)
 
-function respawnSpectators()
+function respawnSpectators() -- Respawn spectators, remove the from spectators table
 	respawn = {}
 	for k, v in pairs(spectators) do
 		table.insert(respawn, v)
@@ -340,14 +350,14 @@ function getQueue()
 	return queue
 end
 
-function deleteStargate()
+function deleteStargate() -- Removes all stargate objects
 	StarGate.GateSpawner.Block = true
 	for k, v in pairs(ents.FindByClass("stargate*")) do	 
 		v:Remove() 
 	end
 end
 
-function status(ply)
+function status(ply) -- Prints all players points
 	sendMess("-- All players stats:", ply)
 	for k, v in pairs(getGamePlayers()) do
 		if(v == nil) then break end
@@ -355,7 +365,7 @@ function status(ply)
 	end
 end
 
-function deleteStats(ply)
+function deleteStats(ply) -- Deletes all points
 	for k, v in pairs(getGamePlayers()) do
 		if(ply == v) then
 			table.remove(points, k)
@@ -366,23 +376,23 @@ function deleteStats(ply)
 	table.RemoveByValue(spectators, ply)
 end
 
-function pushPlayer(pusher, pushed)
+function pushPlayer(pusher, pushed) -- Pushes player, global power x Powerup
 	local power = 1
-	for k, v in pairs(ultraPush) do
+	for k, v in pairs(ultraPush) do -- If power up, stronger push
 		if(v == pusher) then power = 10 end
 	end
 	pushed:SetVelocity(Vector(pusher:GetAimVector().x,pusher:GetAimVector().y,0)*pushMultiplier*power)
 end
 
-function playSound(cesta)
+function playSound(pwd) -- Play sound from path to all players
 	net.Start("Sound")
-		net.WriteString(cesta)
+		net.WriteString(pwd)
 	net.Broadcast()
 end
 
-function playSoundPly(cesta, ply)
+function playSoundPly(pwd, ply) -- Play sound from path to one player
 	net.Start("Sound")
-		net.WriteString(cesta)
+		net.WriteString(pwd)
 	net.Send(ply)
 end
 
@@ -390,7 +400,7 @@ function setRoundReminder(delayR)
 	reminder = RealTime() + delayR
 end
 
-function givePowerup(ply)
+function givePowerup(ply) -- Get random powerup
 	local r = math.random(1,2)
 	if(r == 1) then
 		sendScrMess("pu-100", ply)
@@ -401,6 +411,6 @@ function givePowerup(ply)
 	end
 end
 
-function resetPowerups()
+function resetPowerups() -- Reset powerups table
 	ultraPush = {}
 end
