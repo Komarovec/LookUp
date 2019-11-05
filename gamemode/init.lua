@@ -64,7 +64,11 @@ hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
 	text = text:lower()
 
 	if(string.match(text, "!begin")) then -- Begin new round -- All users, voting system?
-		initializeRound()
+		if(getRoundStatus() == -1) then
+			initializeRound()
+		else
+			sendMess("The game is already running!", ply)
+		end
 	elseif(string.sub(text, 1, 11) == "!difficulty") then -- Change difficulty --> only admins
 		if(ply:IsAdmin()) then
 			if(string.sub(text, 13, 13) == "1") then
