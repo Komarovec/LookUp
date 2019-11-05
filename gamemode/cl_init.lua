@@ -1,5 +1,7 @@
 -- Main scripts
 include("shared.lua")
+AddCSLuaFile("cl_setupBox.lua")
+include("cl_setupBox.lua")
 
 --Vars
 local count = 1 -- Pocitani zprav pro enterovani.

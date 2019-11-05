@@ -4,6 +4,7 @@ roundCooldown = 15 -- default 15
 
 -- Variables
 local round_status = -1 -- 0 = pozastaveno , 1 = aktivní, -1 = neběži
+local setupMode = false
 local roundTimer = 0
 local timerA = false
 local Rand = 0
@@ -17,6 +18,7 @@ local overTime = false
 local insertWinner
 local willDie = false 
 local noReward
+local propSpawnPoints = {}
 points = {}
 
 -- Network Att
@@ -230,4 +232,27 @@ function updateRound(round)
 	net.Start("RoundChange")
 		net.WriteString(round)
 	net.Broadcast()
+end
+
+function getSetupStatus()
+	return setupMode
+end
+
+function changeSetupMode(status, ply)
+	if(setupMode and !status) then
+		broadcastMess("Turned off setup mode")
+		broadcastScrMess("SERVER WAS SET SUCCESFULLY!")
+		setupMode = false
+	elseif(!setupMode and status) then
+		broadcastMess("Turned on setup mode")
+		broadcastScrMess("SERVER WAS SWITCHED TO SETUP MODE!!!")
+		setupMode = true
+	else
+		sendMess("Something went wrong with changing setup mode", ply)
+	end
+end
+
+function addSpawnPoint(ply)
+	table.insert( propSpawnPoints, ply:GetPos())
+	sendMess("Prop spawn point added", ply)
 end

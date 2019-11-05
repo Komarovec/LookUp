@@ -1,5 +1,6 @@
 -- Main script
 AddCSLuaFile("cl_init.lua")
+AddCSLuaFile("cl_setupBox.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
 
@@ -26,6 +27,9 @@ util.AddNetworkString("PointTable")
 util.AddNetworkString("GameplayersTable")
 util.AddNetworkString("SpectatorsTable")
 util.AddNetworkString("tables")
+util.AddNetworkString("originPoint")
+util.AddNetworkString("minsVector")
+util.AddNetworkString("maxsVector")
 
 -- Settings
 pushMultiplier = 2000
@@ -56,6 +60,10 @@ local respawn = {}
 local reminder = 0
 local spawnNormal
 local stargate = true
+local spawnPoints = {}
+local pos1 = nil
+local pos2 = nil
+
 ultraPush = {}
 gamePlayers = {}
 
@@ -113,6 +121,70 @@ hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
 		sendMess("!forceEnd -- Forces end of the game", ply)
 		sendMess("!points -- Prints point table", ply)
 		sendMess("!playersAll -- Prints every player table", ply)
+	elseif(string.match( text, "!setup")) then --Set server to setup mode and stop currently running game
+		if(ply:IsAdmin()) then
+			if(getRoundStatus() == 1) then
+				forceEnd()
+			end
+			if(!getSetupStatus()) then
+				changeSetupMode(true, ply)
+			else
+				sendMess("Server is already in setup mode", ply)
+			end
+		else
+			sendMess("You must be admin to setup a map", ply)
+		end
+	elseif(string.match( text, "!stopSetup")) then --Stop setup mode
+		if(ply:IsAdmin()) then
+			if(getSetupStatus()) then
+				changeSetupMode(false, ply)
+			else
+				sendMess("Server is not in setup mode right now", ply)
+			end
+		else
+			sendMess("Only admin can change this", ply)
+		end
+	elseif(string.match( text, "!pos1")) then --Add spawn area's first point
+		if(ply:IsAdmin()) then
+			if(getSetupStatus()) then
+				pos1 = ply:GetPos()	
+				pos1.z = 1000
+				conDebugVector(pos1, "POS1")
+				sendMess("Position 1 set", ply)
+			else
+				sendMess("Server must be in setup mode to configure the gamemode!", ply)
+			end
+		else
+			sendMess("You can't use this command if you are not admin!", ply)
+		end
+	elseif(string.match( text, "!pos2")) then --Add spawn area's second point
+		if(ply:IsAdmin()) then
+			if(getSetupStatus()) then
+				if(pos1 != nil) then
+					pos2 = ply:GetPos()
+					pos2.z = 1000
+					conDebugVector(pos2, "POS2")
+					sendMess("Position 2 set", ply)
+					local diameterVector = subtractVectors(pos1, pos2) / 2
+					conDebugVector(diameterVector, "Diameter")
+					local originPoint = addVectors(pos1, diameterVector)
+					conDebugVector(originPoint, "Origin point")
+					local minsVector = Vector(0, -diameterVector.y, 1000)
+					conDebugVector(minsVector, "Mins vector")
+					local maxsVector = Vector(-diameterVector.x, 0, 1000)
+					conDebugVector(maxsVector, "Maxs vector")
+					broadcastNetVector("originPoint", originPoint)
+					broadcastNetVector("minsVector", minsVector)
+					broadcastNetVector("maxsVector", maxsVector)
+				else
+					sendMess("You must set !pos1 first!", ply)
+				end
+			else
+				sendMess("Server must be in setup mode to configure the gamemode!", ply)
+			end
+		else
+			sendMess("You can't use this command if you are not admin!", ply)
+		end
 	end
 end)
 
@@ -413,4 +485,24 @@ end
 
 function resetPowerups() -- Reset powerups table
 	ultraPush = {}
+end
+
+function broadcastNetVector(name, vector)
+	net.Start(name)
+	net.WriteVector(vector)
+	net.Broadcast()
+end
+
+function conDebugVector(vector, name)
+	print("Vector "..name.."("..vector.x..","..vector.y..","..vector.z..")")
+end
+
+--Subtracts two vectors
+function subtractVectors(u, v)
+	return Vector(v.x - u.x, v.y - u.y, v.z - u.z)
+end
+
+--Adds two vectors
+function addVectors(u,v)
+	return Vector(u.x + v.x, u.y + v.y, u.z + v.z)
 end
