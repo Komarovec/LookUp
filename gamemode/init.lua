@@ -153,6 +153,12 @@ hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
 			if(getSetupStatus()) then
 				pos1 = ply:GetPos()	
 				pos1.z = 1000
+				local prop = ents.Create("prop_physics")
+				prop:SetModel("models/props_lab/monitor02.mdl")
+				prop:SetPos(pos1)
+				prop:SetAngles(Angle(0,0,0))
+				prop:SetMoveType(MOVETYPE_NONE)
+				prop:Spawn()
 				conDebugVector(pos1, "POS1")
 				sendMess("Position 1 set", ply)
 			else
@@ -167,17 +173,23 @@ hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
 				if(pos1 != nil) then
 					pos2 = ply:GetPos()
 					pos2.z = 1000
+					local prop2 = ents.Create("prop_physics")
+					prop2:SetModel("models/props_lab/monitor02.mdl")
+					prop2:SetPos(pos2)
+					prop2:SetAngles(Angle(0,0,0))
+					prop2:SetMoveType(MOVETYPE_NONE)
+					prop2:Spawn()
 					conDebugVector(pos2, "POS2")
 					sendMess("Position 2 set", ply)
 					local diameterVector = subtractVectors(pos1, pos2) / 2
 					conDebugVector(diameterVector, "Diameter")
-					local originPoint = addVectors(pos1, diameterVector)
+					local originPoint = pos1
 					conDebugVector(originPoint, "Origin point")
-					local minsVector = multiplyVectors(originPoint, Vector(10, -diameterVector.y, 1000)) 
-					minsVector.z = 100
+					local minsVector = pos1
+					minsVector.z = 1000
 					conDebugVector(minsVector, "Mins vector")
-					local maxsVector = multiplyVectors(originPoint, Vector(-diameterVector.x, 10, 1000))
-					maxsVector.z = 100
+					local maxsVector = pos2
+					maxsVector.z = 1000
 					conDebugVector(maxsVector, "Maxs vector")
 					broadcastNetVector("originPoint", originPoint)
 					broadcastNetVector("minsVector", minsVector)
