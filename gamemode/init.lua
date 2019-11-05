@@ -30,6 +30,7 @@ util.AddNetworkString("tables")
 util.AddNetworkString("originPoint")
 util.AddNetworkString("minsVector")
 util.AddNetworkString("maxsVector")
+util.AddNetworkString("setupMode")
 
 -- Settings
 pushMultiplier = 2000
@@ -128,6 +129,8 @@ hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
 			end
 			if(!getSetupStatus()) then
 				changeSetupMode(true, ply)
+				broadcastBoolValue("setupMode", true)
+				print("Sent setupMode value")
 			else
 				sendMess("Server is already in setup mode", ply)
 			end
@@ -138,6 +141,7 @@ hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
 		if(ply:IsAdmin()) then
 			if(getSetupStatus()) then
 				changeSetupMode(false, ply)
+				broadcastBoolValue("setupMode", false)
 			else
 				sendMess("Server is not in setup mode right now", ply)
 			end
@@ -169,9 +173,11 @@ hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
 					conDebugVector(diameterVector, "Diameter")
 					local originPoint = addVectors(pos1, diameterVector)
 					conDebugVector(originPoint, "Origin point")
-					local minsVector = Vector(0, -diameterVector.y, 1000)
+					local minsVector = multiplyVectors(originPoint, Vector(10, -diameterVector.y, 1000)) 
+					minsVector.z = 100
 					conDebugVector(minsVector, "Mins vector")
-					local maxsVector = Vector(-diameterVector.x, 0, 1000)
+					local maxsVector = multiplyVectors(originPoint, Vector(-diameterVector.x, 10, 1000))
+					maxsVector.z = 100
 					conDebugVector(maxsVector, "Maxs vector")
 					broadcastNetVector("originPoint", originPoint)
 					broadcastNetVector("minsVector", minsVector)
@@ -493,6 +499,12 @@ function broadcastNetVector(name, vector)
 	net.Broadcast()
 end
 
+function broadcastBoolValue(name, value)
+	net.Start(name)
+	net.WriteBool(value)
+	net.Broadcast()
+end
+
 function conDebugVector(vector, name)
 	print("Vector "..name.."("..vector.x..","..vector.y..","..vector.z..")")
 end
@@ -505,4 +517,8 @@ end
 --Adds two vectors
 function addVectors(u,v)
 	return Vector(u.x + v.x, u.y + v.y, u.z + v.z)
+end
+
+function multiplyVectors(u, v)
+	return Vector(u.x * v.x, u.y * v.y, u.z * v.z)
 end
