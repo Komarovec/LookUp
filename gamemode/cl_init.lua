@@ -75,7 +75,6 @@ Ifont = "InfoFont"
 Mfont = "MessFont"
 
 -- UI Odpocet + PointCounter
-
 WhiteBoxColor = Color(220, 220, 220,220)
 
 local Shape = vgui.Create("DShape")
@@ -90,7 +89,7 @@ Shape.Paint = function(s, w ,h)
 	draw.SimpleTextOutlined(timerTime, Ifont, 50*widthIndex, 62*heightIndex, timerColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 0.1, timerColor)
 	draw.SimpleTextOutlined(tostring(points), Ifont, 50*widthIndex, 32*heightIndex, Color(100, 100, 100, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 0.1, Color(100, 100, 100,255))
 end
- 
+
 -- WaveIcons
 local WaveIcon = vgui.Create("DSprite")
 local sizeBG = 150

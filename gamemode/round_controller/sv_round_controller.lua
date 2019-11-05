@@ -163,7 +163,7 @@ end
 
 function addPoints(ply, ps)
 	if(table.Count(points) != table.Count(getGamePlayers())) then
-		broadcastMess("Inconsistency in points table detected! / !forceEnd / recommeded!")
+		broadcastMess("Inconsistency in points table detected! / !end / recommended!")
 	end
 	psPlus = ps + getPoints(ply)
 	for k, v in pairs(getGamePlayers()) do
@@ -199,7 +199,7 @@ function resetPoints()
 end
 
 function forceEnd()
-	broadcastScrMess("--- FORCING END OF THE GAME ---")
+	broadcastScrMess("FORCING END OF THE GAME")
 	round_status = -1
 	deleteProps()
 	respawnSpectators()

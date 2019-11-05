@@ -61,9 +61,9 @@ gamePlayers = {}
 
 -- Hooks
 hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
-	ply:ChatPrint("Petr")
+	text = text:lower()
 
-	if(string.sub(text, 1, 11) == "!beginRound" || string.sub(text, 1, 11) == "!roundBegin" ) then -- Begin new round -- All users, voting system?
+	if(string.match(text, "!begin")) then -- Begin new round -- All users, voting system?
 		initializeRound()
 	elseif(string.sub(text, 1, 11) == "!difficulty") then -- Change difficulty --> only admins
 		if(ply:IsAdmin()) then
@@ -79,17 +79,17 @@ hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
 		else
 			sendMess("Only admins can change difficulty!", ply)
 		end
-	elseif(string.sub(text, 1, 6) == "!stats") then -- Prints information about points, positions
+	elseif(string.match(text, "!stats")) then -- Prints information about points, positions
 		status(ply)
-	elseif(string.sub(text, 1, 9) == "!forceEnd") then -- Force end the game --> only admins
+	elseif(string.match(text, "!end")) then -- Force end the game --> only admins
 		if(ply:IsAdmin()) then
 			forceEnd()
 		else
 			sendMess("Only admins can use  this command!", ply)
 		end
-	elseif(string.sub(text, 1, 7) == "!points") then -- Debug functions
+	elseif(string.match(text, "!points")) then -- Debug functions
 		printPoints(ply)
-	elseif(string.sub(text, 1, 11) == "!playersAll") then -- Debug functions
+	elseif(string.match(text, "!plyall")) then -- Debug functions
 		sendMess("--- Printing game players:", ply)
 		for k, v in pairs(getGamePlayers()) do
 			sendMess(k.." "..v:Nick(), ply)
@@ -106,15 +106,15 @@ hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
 		for k, v in pairs(getQueue()) do
 			sendMess(k.." "..v, ply)
 		end
-	elseif(string.sub(text, 1, 5) == "!help") then -- Shows all commands
+	elseif(string.match(text, "!help")) then -- Shows all commands
 		sendMess("List of Commands:", ply)
-		sendMess("!beginRound -- Start a round", ply)
+		sendMess("!begin -- Start a round", ply)
 		sendMess("!difficulty <1-2> -- Change difficulty", ply)
 		sendMess("!stats -- Shows players points", ply)
 		sendMess("- Debug Commands -", ply)
-		sendMess("!forceEnd -- Forces end of the game", ply)
+		sendMess("!end -- Forces end of the game", ply)
 		sendMess("!points -- Prints point table", ply)
-		sendMess("!playersAll -- Prints every player table", ply)
+		sendMess("!plyall -- Prints every player table", ply)
 	end
 end)
 
@@ -141,8 +141,8 @@ end)
 
 hook.Add("Think", "Reminder", function() -- Remind to start a round, when no round
 	if(getRoundStatus() == -1 && reminder < RealTime()) then
-		broadcastScrMess("To start a round type !beginRound")
-		reminder = RealTime() + 60
+		broadcastScrMess("To start a round, type !begin in the game chat")
+		reminder = RealTime() + 15
 	end
 end)
 
