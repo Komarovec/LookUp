@@ -61,6 +61,8 @@ gamePlayers = {}
 
 -- Hooks
 hook.Add("PlayerSay", "ChatCommands", function(ply, text, team)
+	ply:ChatPrint("Petr")
+
 	if(string.sub(text, 1, 11) == "!beginRound" || string.sub(text, 1, 11) == "!roundBegin" ) then -- Begin new round -- All users, voting system?
 		initializeRound()
 	elseif(string.sub(text, 1, 11) == "!difficulty") then -- Change difficulty --> only admins
