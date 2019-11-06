@@ -146,6 +146,9 @@ scoreboard = {}
 function scoreboard:show()
 	--Create the scoreboard here, with an base like DPanel, you can use an DListView for the rows.
 	getTables()
+
+	gamePlayersTable = gamePlayers -- Lock game player table so net wont change it
+
 	local scorePanel = vgui.Create( "DPanel" )
 	scorePanel:SetSize( 600*widthIndex, 500*heightIndex)
 	scorePanel:Center()
@@ -174,9 +177,9 @@ function scoreboard:show()
 					pointTable[k] = max
 					pointTable[k-1] = pom
 
-					pomPly = gamePlayers[k]
-					gamePlayers[k] = gamePlayers[k-1]
-					gamePlayers[k-1] = pomPly
+					pomPly = gamePlayersTable[k]
+					gamePlayersTable[k] = gamePlayersTable[k-1]
+					gamePlayersTable[k-1] = pomPly
 					change = true
 				else
 					max = v
@@ -184,8 +187,8 @@ function scoreboard:show()
 			end
 		until(!change)
 
-		for k,v in pairs(table.Reverse(gamePlayers)) do
-			plyList:AddLine( v:Nick(), table.Reverse(pointTable)[k], "#"..k)
+		for k,v in pairs(table.Reverse(gamePlayersTable)) do
+			plyList:AddLine(v:Nick(), table.Reverse(pointTable)[k], "#"..k)
 		end
 	end
 
