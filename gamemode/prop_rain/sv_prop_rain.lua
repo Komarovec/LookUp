@@ -19,30 +19,31 @@ hook.Add("Think", "PropSpawnTimer", function()
 	spawnProps()
 end)
 
-hook.Add("Think", "NextWaveTimer", function()
+hook.Add("Think", "NextWaveTimer", function() -- Generate next wave
 	if(RealTime() < WaveTimeFinal || SpawningProps == false) then return end
-	for k, v in pairs(ents.FindByClass("prop_physics")) do
-		v:Remove()
+	if(funWave != 0) then -- Give points to everybody who survived special wave
+		giveRewardToAlive(10)
 	end
-	for k, v in pairs(ents.FindByClass("powerup")) do
-		v:Remove()
-	end
-	funWave = 0
+
+	-- Remove any props and entities
+	deleteProps(true)
+
+	funWave = 4
 	if(math.random(1,3) == 3) then
 		funWaveRnd = math.random(1,4) 
 		if(funWaveRnd == 1) then 
-			funWave = 1
+			funWave = 1 -- Vending
 		elseif(funWaveRnd == 2) then 
-			funWave = 1
+			funWave = 1 -- Vending
 		elseif(funWaveRnd == 3) then 
-			funWave = 3
+			funWave = 3 -- Cargo
 		elseif(funWaveRnd == 4) then 
-			funWave = 2
+			funWave = 2 -- Explosive
 		end
 
 		if(funWave == 1) then broadcastScrMess("Vending wave!")
 		elseif(funWave == 2) then broadcastScrMess("Explosive wave!")
-		elseif(funWave == 3) then broadcastScrMess("Cargo wave!") 
+		elseif(funWave == 3) then broadcastScrMess("Cargo wave!")
 		end
 	end
 	WaveTimeFinal = RealTime() + WaveTime
@@ -55,7 +56,7 @@ function initializeProps(diff)
 	spawnedProps = 0
 	Props = {}
 	if(hardnessMultiplier > 2 || hardnessMultiplier < 1) then
-		print("Incorrect hardness settings! 1 or 2 !! Using default..")
+		print("Incorrect difficulty setting! Using default..")
 		hardnessMultiplier = 1
 	end
 
@@ -138,8 +139,8 @@ function broadcastWaveType(type)
 	net.Broadcast()
 end
 
-function deleteProps()
-	SpawningProps = false
+function deleteProps(spawning)
+	SpawningProps = spawning
 	for k, v in pairs(ents.FindByClass("prop_physics")) do
 		v:Remove()
 	end

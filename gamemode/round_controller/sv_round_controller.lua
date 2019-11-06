@@ -78,17 +78,8 @@ end
 function endRound() -- Give rewards to players, delete props, respawn spectators, reset powerups, check overtime players, sort points, show winner
 	round_status = 0
 	broadcastWaveType("wait")
-	for k, v in pairs(getGamePlayers()) do -- Players is in dead/spectator --> nno reward otherwise reward
-		noReward = false
-		for k1, v1 in pairs(getDeadPlayers()) do
-			if(v == v1) then noReward = true end
-		end
-		for k1, v1 in pairs(getSpectators()) do
-			if(v == v1) then noReward = true end
-		end
-		if(noReward == false) then addPoints(v, 100) end
-	end
-	deleteProps()
+	giveRewardToAlive(100)
+	deleteProps(false)
 	respawnSpectators()
 	resetPowerups()
 	if(difficulty >= 10) then
@@ -143,6 +134,19 @@ function endRound() -- Give rewards to players, delete props, respawn spectators
 		broadcastScrMess("Round has ended! New round in "..roundCooldown.." seconds.")
 		roundTimer = RealTime() + roundCooldown
 		timerA = true
+	end
+end
+
+function giveRewardToAlive(reward) -- Gives points to alive players
+	for k, v in pairs(getGamePlayers()) do -- Players is in dead/spectator --> nno reward otherwise reward
+		noReward = false
+		for k1, v1 in pairs(getDeadPlayers()) do
+			if(v == v1) then noReward = true end
+		end
+		for k1, v1 in pairs(getSpectators()) do
+			if(v == v1) then noReward = true end
+		end
+		if(noReward == false) then addPoints(v, reward) end
 	end
 end
 
@@ -201,7 +205,7 @@ end
 function forceEnd()
 	broadcastScrMess("FORCING END OF THE GAME")
 	round_status = -1
-	deleteProps()
+	deleteProps(false)
 	respawnSpectators()
 	timerA = false
 	roundTimer = 0
