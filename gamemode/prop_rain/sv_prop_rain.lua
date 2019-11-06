@@ -38,10 +38,12 @@ hook.Add("Think", "NextWaveTimer", function()
 			funWave = 3
 		elseif(funWaveRnd == 4) then 
 			funWave = 2
+		end
 
 		if(funWave == 1) then broadcastScrMess("Vending wave!")
 		elseif(funWave == 2) then broadcastScrMess("Explosive wave!")
-		elseif(funWave == 3) then broadcastScrMess("Cargo wave!") end
+		elseif(funWave == 3) then broadcastScrMess("Cargo wave!") 
+		end
 	end
 	WaveTimeFinal = RealTime() + WaveTime
 	spawnedProps = 0
