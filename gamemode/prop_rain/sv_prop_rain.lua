@@ -29,7 +29,7 @@ hook.Add("Think", "NextWaveTimer", function() -- Generate next wave
 	deleteProps(true)
 
 	funWave = 0
-	if(math.random(1,3) == 3) then
+	if(math.random(1,4) == 4) then
 		funWaveRnd = math.random(1,4) 
 		if(funWaveRnd == 1) then 
 			funWave = 1 -- Vending
