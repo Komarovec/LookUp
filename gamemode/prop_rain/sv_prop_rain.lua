@@ -28,7 +28,7 @@ hook.Add("Think", "NextWaveTimer", function() -- Generate next wave
 	-- Remove any props and entities
 	deleteProps(true)
 
-	funWave = 4
+	funWave = 0
 	if(math.random(1,3) == 3) then
 		funWaveRnd = math.random(1,4) 
 		if(funWaveRnd == 1) then 
