@@ -26,6 +26,7 @@ util.AddNetworkString("PointTable")
 util.AddNetworkString("GameplayersTable")
 util.AddNetworkString("SpectatorsTable")
 util.AddNetworkString("tables")
+util.AddNetworkString("Powerup")
 
 -- Settings
 pushMultiplier = 2000
@@ -415,8 +416,17 @@ function givePowerup(ply) -- Get random powerup
 		sendScrMess("pu-power", ply)
 		table.insert(ultraPush, ply)
 	end
+
+	net.Start("Powerup")
+		net.WriteInt(r, 8)
+	net.Send(ply)
 end
 
 function resetPowerups() -- Reset powerups table
+	for k,v in pairs(ultraPush) do
+		net.Start("Powerup")
+			net.WriteInt(0, 8)
+		net.Send(v)
+	end
 	ultraPush = {}
 end

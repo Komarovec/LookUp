@@ -2,6 +2,8 @@
 include("shared.lua")
 
 --Vars
+local powerup = 0 -- 0 no powerup; 1 body navic; 2 ultrapunch
+local ultrapunch = false
 local count = 1 -- Pocitani zprav pro enterovani.
 local points = 0
 local timerTime = "0"
@@ -330,4 +332,13 @@ end)
 
 net.Receive("PropChange", function()
 	propsFalling = net.ReadString()
+end)
+
+net.Receive("Powerup", function()
+	powerup = net.ReadInt(8)
+	if(powerup == 2) then
+		ultrapunch = true
+	elseif(powerup == 0) then
+		ultrapunch = false
+	end
 end)
