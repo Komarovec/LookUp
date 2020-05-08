@@ -42,6 +42,9 @@ elseif(mapName == "gm_construct") then
 elseif(mapName == "lu_canals") then
 	propsSpawnpoint = Vector(0, 0, 0)
 	deathLine = -400
+elseif(mapName == "lu_studna") then
+	propsSpawnpoint = Vector(-4, -2, 160)
+	deathLine = -100
 else
 	propsSpawnpoint = Vector(0, 0, 0)
 	deathLine = 0
