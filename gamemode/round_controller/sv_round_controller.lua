@@ -82,6 +82,9 @@ function endRound() -- Give rewards to players, delete props, respawn spectators
 	deleteProps(false)
 	respawnSpectators()
 	resetPowerups()
+	if(cleanUpMap) then -- Cleanup map every round on breakable maps
+		resetMap()
+	end
 	if(difficulty >= 10) then
 		maxPoints = -10000
 		insertWinner = true
@@ -200,6 +203,20 @@ function resetPoints()
 			net.WriteInt(0, 16)
 	net.Broadcast()
 	broadcastTables()
+end
+
+function playerSelectSpawn()
+    local spawns = ents.FindByClass( "info_player_start" )
+    local random_entry = math.random( #spawns )
+    
+    return spawns[random_entry]:GetPos()
+end
+
+function resetMap() -- Cleans up map and teleports plys to center
+	game.CleanUpMap()
+	for k, v in pairs(getGamePlayers()) do
+		v:SetPos(playerSelectSpawn())
+	end
 end
 
 function forceEnd()

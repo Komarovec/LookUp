@@ -30,6 +30,7 @@ util.AddNetworkString("Powerup")
 
 -- Settings
 pushMultiplier = 2000
+cleanUpMap = false
 
 -- Map Check
 mapName = game.GetMap();
@@ -45,6 +46,10 @@ elseif(mapName == "lu_canals") then
 elseif(mapName == "lu_studna") then
 	propsSpawnpoint = Vector(-4, -2, 160)
 	deathLine = -100
+elseif(mapName == "lu_studna_layers_type") then
+	propsSpawnpoint = Vector(-4, -2, 160)
+	deathLine = -800
+	cleanUpMap = true
 else
 	propsSpawnpoint = Vector(0, 0, 0)
 	deathLine = 0
